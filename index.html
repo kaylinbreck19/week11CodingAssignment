@@ -1,0 +1,198 @@
+<!-- HTML Document Structure -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- Meta tags for character set, compatibility, and viewport settings -->
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Title of the page -->
+    <title>Tic-Tac-Toe Game</title>
+    <!-- Linking Bootstrap stylesheet -->
+    <link rel="stylesheet" href="node_modules/bootstrap/dist/css/bootstrap.min.css">
+    <!-- Styling for the game -->
+    <style>
+        /* Styling for the body, creating a flex container */
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #764248;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+        }
+    
+        /* Styling for the main container */
+        .container {
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+    
+        /* Styling for the title */
+        h1 {
+            font-size: 24px;
+            color: #FFADC6;
+        }
+    
+        /* Styling for the game board */
+        #board {
+            width: 200px;
+            margin: 20px auto;
+            justify-content: center;
+        }
+    
+        /* Styling for individual cells in the game board */
+        .cell {
+            border: 2px solid #FFADC6;
+            height: 50px;
+            width: 50px;
+            text-align: center;
+            line-height: 50px;
+            cursor: pointer;
+            font-size: 18px;
+            font-weight: bold;
+            transition: background-color 0.3s;
+        }
+    
+        /* Styling for cell hover effect */
+        .cell:hover {
+            background-color: #e1e7f0;
+        }
+    
+        /* Styling for creating rows in the game board */
+        .row::after {
+            content: "";
+            display: table;
+            clear: both;
+        }
+    
+        /* Styling for the restart button */
+        #restart {
+            font-size: 16px;
+            margin-top: 10px;            
+        }
+    
+        /* Styling for the alert message */
+        #alert {
+            font-size: 18px;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Game container with title, board, and restart button -->
+    <div class="container mt-5">
+        <h1 id="turn">It's X's turn</h1>
+        <div id="board" class="row">
+            <!-- Individual cells in the game board -->
+            <div class="col-4 cell" data-id="0"></div>
+            <div class="col-4 cell" data-id="1"></div>
+            <div class="col-4 cell" data-id="2"></div>
+            <div class="w-100"></div>
+            <div class="col-4 cell" data-id="3"></div>
+            <div class="col-4 cell" data-id="4"></div>
+            <div class="col-4 cell" data-id="5"></div>
+            <div class="w-100"></div>
+            <div class="col-4 cell" data-id="6"></div>
+            <div class="col-4 cell" data-id="7"></div>
+            <div class="col-4 cell" data-id="8"></div>
+        </div>
+        <!-- Restart button -->
+        <button class="btn btn-primary mt-3" id="restart">Restart Game</button>
+    </div>
+
+    <!-- Including jQuery, Popper.js, and Bootstrap JavaScript -->
+    <script src="node_modules/jquery/dist/jquery.slim.min.js"></script>
+    <script src="node_modules/@popperjs/core/dist/umd/popper.min.js"></script>
+    <script src="node_modules/bootstrap/dist/js/bootstrap.min.js"></script>
+
+    <!-- JavaScript for the Tic-Tac-Toe game functionality -->
+    <script>
+        // Game state variables
+        let currentPlayer = 'X';
+        let gameBoard = ['', '', '', '', '', '', '', '', ''];
+        let gameOver = false;
+
+        // Function to check for a winner or draw
+        const checkWinner = () => {
+            // Possible winning combinations
+            const winningCombinations = [
+                [0, 1, 2], [3, 4, 5], [6, 7, 8],
+                [0, 3, 6], [1, 4, 7], [2, 5, 8],
+                [0, 4, 8], [2, 4, 6]
+            ];
+
+            // Iterate through winning combinations
+            for (const combination of winningCombinations) {
+                const [a, b, c] = combination;
+                // Check if the values in the game board match
+                if (gameBoard[a] && gameBoard[a] === gameBoard[b] && gameBoard[a] === gameBoard[c]) {
+                    return gameBoard[a]; // Return the winner
+                }
+            }
+
+            // Check for a draw
+            if (!gameBoard.includes('')) {
+                return 'draw';
+            }
+
+            return null; // No winner yet
+        };
+
+        // Function to handle cell click
+        const handleCellClick = (cell) => {
+            const cellId = $(cell).data('id');
+
+            // Check if the cell is empty and the game is not over
+            if (!gameBoard[cellId] && !gameOver) {
+                gameBoard[cellId] = currentPlayer;
+                $(cell).text(currentPlayer);
+
+                const winner = checkWinner();
+
+                if (winner) {
+                    // Display alert for winner or draw
+                    if (winner === 'draw') {
+                        showAlert('It\'s a draw!');
+                    } else {
+                        showAlert(`Player ${winner} wins!`);
+                    }
+                    gameOver = true; // Game is over
+                } else {
+                    currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
+                    $('#turn').text(`It's ${currentPlayer}'s turn`);
+                }
+            }
+        };
+
+        // Function to restart the game
+        const restartGame = () => {
+            gameBoard = ['', '', '', '', '', '', '', '', ''];
+            currentPlayer = 'X';
+            gameOver = false;
+            $('.cell').text('');
+            $('#turn').text(`It's ${currentPlayer}'s turn`);
+            $('#alert').remove();
+        };
+
+        // Function to show an alert message
+        const showAlert = (message) => {
+            const alert = `<div class="alert alert-info mt-3" id="alert" role="alert">${message}</div>`;
+            $('.container').append(alert);
+        };
+
+        // Event listener for cell clicks
+        $('.cell').click(function () {
+            handleCellClick(this);
+        });
+
+        // Event listener for restart button
+        $('#restart').click(restartGame);
+    </script>
+</body>
+</html>
+
